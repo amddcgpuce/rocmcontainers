@@ -1,0 +1,46 @@
+# V1.2 ROCM-4.2.0 GROMACS Singularity Container Definition file for Ubuntu18
+#
+
+Bootstrap: docker
+From: amddcgpuce/gromacs_2020_3-rocm420-ubuntu18
+
+%post
+    NOW=`date`
+    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+
+%environment
+    export PATH=/usr/local/gromacs/bin:/opt/rocm/bin:/opt/rocm/opencl/bin:$PATH
+    export LANGUAGE=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+
+%runscript
+    echo "Container was created $NOW"
+    /opt/rocm/bin/rocminfo 2>&1 | /bin/grep "HSA Error" > /dev/null
+    if [ $? -eq 0 ]
+    then
+        echo ""
+        echo "Error: Incompatible ROCm environment. The Docker container "
+        echo "requires the latest kernel driver to operate correctly."
+        echo ""
+        echo "Upgrade the ROCm kernel to v4.1 or newer, or use a container "
+        echo "tagged for v4.0.1 or older."
+        echo ""
+        echo "To inspect the version of the installed kernel driver, run either:"
+        echo "    . dpkg --status rock-dkms [Debian-based]"
+        echo "    . rpm -ql rock-dkms [RHEL, SUSE, and others]"
+        echo ""
+        echo "To install or update the driver, follow the installation instructions at:"
+        echo "    https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html"
+        echo ""
+        exit 1
+    fi
+    cd /opt/gromacs
+    . /usr/local/gromacs/bin/GMXRC
+    echo "CWD: /opt/gromacs Launching: $*"
+    exec "$@"
+
+%help
+    singularity run gromacs_2020_3.rocm420.ubuntu18.sif /bin/bash -c "cp -r benchmark $HOME/Documents/"
+    singularity run gromacs_2020_3.rocm420.ubuntu18.sif /bin/bash -c "cd $HOME/Documents/benchmark/adh_dodec; /usr/local/gromacs/bin/gmx_mpi grompp -f pme_verlet.mdp -c conf.gro -p topol.top -maxwarn 20"
+    singularity run gromacs_2020_3.rocm420.ubuntu18.sif /bin/bash -c "cd $HOME/Documents/benchmark; ./run.sh"
