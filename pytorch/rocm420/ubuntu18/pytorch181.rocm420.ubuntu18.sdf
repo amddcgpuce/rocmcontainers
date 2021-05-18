@@ -1,0 +1,44 @@
+# V1.2 ROCM-4.2.0-based Pytorch-1.8.1 Singularity Container Definition file for Ubuntu18
+#
+
+Bootstrap: docker
+From: amddcgpuce/pytorch181-rocm420-ubuntu18
+
+%post
+    NOW=`date`
+    echo "export NOW=\"${NOW}\"" >> $SINGULARITY_ENVIRONMENT
+
+%environment
+    export LANGUAGE=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    export PATH=/opt/rocm/bin:/opt/rocm/opencl/bin:$PATH
+
+%runscript
+    echo "Container was created $NOW"
+    /opt/rocm/bin/rocminfo 2>&1 | /bin/grep "HSA Error" > /dev/null
+    if [ $? -eq 0 ]
+    then
+        echo ""
+        echo "Error: Incompatible ROCm environment. The Docker container "
+        echo "requires the latest kernel driver to operate correctly."
+        echo ""
+        echo "Upgrade the ROCm kernel to v4.1 or newer, or use a container "
+        echo "tagged for v4.0.1 or older."
+        echo ""
+        echo "To inspect the version of the installed kernel driver, run either:"
+        echo "    . dpkg --status rock-dkms [Debian-based]"
+        echo "    . rpm -ql rock-dkms [RHEL, SUSE, and others]"
+        echo ""
+        echo "To install or update the driver, follow the installation instructions at:"
+        echo "    https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html"
+        echo ""
+        exit 1
+    fi
+    echo "CWD: /opt/pytorch Launching: $*"
+    exec "$@"
+
+%help
+    singularity run pytorch181.rocm420.ubuntu18.sif /bin/bash -c "cp -r /opt/pytorch-micro-benchmarking $HOME/Documents; cd $HOME/Documents/pytorch-micro-benchmarking; python3 micro_benchmarking_pytorch.py --network resnext101  --batch-size 128  --iterations 100"
+    singularity run pytorch181.rocm420.ubuntu18.sif /bin/bash -c "cp -r /opt/pytorch/caffe2/python/examples $HOME/Documents; cd $HOME/Documents/examples; python3 $HOME/Documents/examples/resnet50_trainer.py --train_data null --batch_size 16 --epoch_size 1000 --num_epochs 2 --num_gpus 2"
+
