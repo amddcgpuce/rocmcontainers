@@ -1,6 +1,7 @@
 ```
-Copyright (c) 2022 Advanced Micro Devices, Inc. All Rights Reserved.
-Revision: V1.0
+Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+Revision: V1.1
+V1.1: updated docker tag
 V1.0: add docker and singualrity commands 
 ```
 
@@ -9,14 +10,14 @@ V1.0: add docker and singualrity commands
 ## Pull Command
 
 ```
-sudo docker pull amdih/grid:0.8.2-20211213
+sudo docker pull amdih/grid:0.8.amd5_62
 ```
 
 ## Running Containers
 ### Using Docker
 Launch the container using
 ```
-sudo docker run --rm -it --ipc=host --device /dev/dri --device /dev/kfd --security-opt seccomp=unconfined -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 amdih/grid:0.8.2-20211213 /bin/bash
+sudo docker run --rm -it --ipc=host --device /dev/dri --device /dev/kfd --security-opt seccomp=unconfined -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 amdih/grid:0.8.amd5_62 /bin/bash
 ```
 Grid is installed and available under $GRID_PATH.
 
@@ -33,11 +34,11 @@ This section assumes that an up-to-date version of Singularity is installed on y
 
 Pull and convert docker image to singularity image format:
 ```
-singularity pull grid.sif docker://amdih/grid:0.8.2-20211213
+singularity pull grid_0.8.amd5_62.sif docker://amdih/grid:0.8.amd5_62
 ```
 You can then use examples from the preceding section to use the image. For example, to run the benchmark problem, you may do
 ```
-singularity run grid.sif Benchmark_ITT --accelerator-threads 8
+singularity run grid_0.8.amd5_62.sif Benchmark_ITT --accelerator-threads 8
 ```
 ### Run Using Scripts
 The run_grid_docker.sh script runs the test using Docker commands. Get the script and run it as follows:
